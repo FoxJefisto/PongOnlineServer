@@ -3,6 +3,7 @@ using System;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ConsoleServer
 {
@@ -36,28 +37,28 @@ namespace ConsoleServer
                     while (stream.DataAvailable);
 
                     string message = builder.ToString();
-                    string response = "Default";
-                    Console.WriteLine(message);
-                    if ( message.Contains("start",StringComparison.OrdinalIgnoreCase))
+                    var matchCommand = Regex.Match(message, @"([^:]+): (\w+)\s*(.*)");
+                    var userName = matchCommand.Groups[1].Value;
+                    var command = matchCommand.Groups[2].Value;
+                    string response;
+                    switch (command)
                     {
-                        string userName = message.Substring(0,message.IndexOf(":"));
-                        response = gameState.RegisterUser(userName);
-                    }
-                    else if ( message.Contains("update", StringComparison.OrdinalIgnoreCase))
-                    {
-                        var userName = gameState.UpdateUser(message);
-                        if(userName != null)
-                        {
+                        case "register":
+                            response = gameState.RegisterUser(userName);
+                            break;
+                        case "update":
+                            gameState.UpdateUser(userName, matchCommand.Groups[3].Value);
                             response = gameState.GetOpponent(userName);
-                        }
-                        else
-                        {
-                            response = "User not found";
-                        }
-                    }
-                    else if (message.Contains("status", StringComparison.OrdinalIgnoreCase))
-                    {
-                        response = gameState.GetStatus();
+                            break;
+                        case "status":
+                            response = gameState.GetStatus();
+                            break;
+                        case "cancel":
+                            response = gameState.DeleteUser(userName);
+                            break;
+                        default:
+                            response = "unknown command";
+                            break;
                     }
                     // отправляем обратно сообщение в верхнем регистре
                     data = Encoding.Unicode.GetBytes(response);
