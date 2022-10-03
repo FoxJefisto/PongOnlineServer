@@ -35,7 +35,6 @@ namespace ConsoleServer
                         builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
                     }
                     while (stream.DataAvailable);
-
                     string message = builder.ToString();
                     var matchCommand = Regex.Match(message, @"([^:]+): (\w+)\s*(.*)");
                     var userName = matchCommand.Groups[1].Value;
@@ -45,16 +44,23 @@ namespace ConsoleServer
                     {
                         case "register":
                             response = gameState.RegisterUser(userName);
+                            Console.WriteLine($"Пользователь {userName} зарегистрирован на игру");
                             break;
                         case "update":
-                            gameState.UpdateUser(userName, matchCommand.Groups[3].Value);
-                            response = gameState.GetOpponent(userName);
+                            response = gameState.UpdateUser(userName, matchCommand.Groups[3].Value);
+                            if (response != "stopgame")
+                                response = gameState.GetOpponent(userName);
                             break;
                         case "status":
                             response = gameState.GetStatus();
+                            if(response == "False")
+                                Console.WriteLine($"Пользователь {userName} ожидает противника");
+                            else
+                                Console.WriteLine($"Пользователь {userName} нашел противника");
                             break;
                         case "cancel":
                             response = gameState.DeleteUser(userName);
+                            Console.WriteLine($"Пользователь {userName} покинул поиск игры");
                             break;
                         default:
                             response = "unknown command";
@@ -67,6 +73,7 @@ namespace ConsoleServer
             }
             catch (Exception ex)
             {
+                gameState.StopGame();
                 Console.WriteLine(ex.Message);
             }
             finally

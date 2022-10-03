@@ -33,17 +33,32 @@ namespace PongOnlineServer
             else if (Player2 == null)
             {
                 Player2 = new Player(userName);
-                gameStatus = true;
-                ball = new Ball();
+                StartGame();
                 return "2";
             }
             return "Places are busy";
         }
 
+        public void StartGame()
+        {
+            gameStatus = true;
+            ball = new Ball();
+        }
+
+        public void StopGame()
+        {
+            Player1 = null;
+            Player2 = null;
+            gameStatus = false;
+        }
+
         public string UpdateUser(string userName, string message)
         {
             var coords = message.Split(' ');
-
+            if (!gameStatus)
+            {
+                return "stopgame";
+            }
             if (userName == Player1.Name)
             {
                 Player1.CanvasTop = coords[0];
@@ -60,7 +75,7 @@ namespace PongOnlineServer
                 Player2.CanvasLeft = coords[1];
                 return Player2.Name;
             }
-            return null;
+            return "ok";
         }
 
         public string DeleteUser(string userName)

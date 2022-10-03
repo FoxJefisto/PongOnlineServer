@@ -7,13 +7,13 @@ namespace ConsoleServer
 {
     class Program
     {
-        const int port = 8888;
+        const int port = 55555;
         static TcpListener listener;
         static void Main(string[] args)
         {
             try
             {
-                listener = new TcpListener(IPAddress.Parse("127.0.0.1"), port);
+                listener = new TcpListener(IPAddress.Parse("0.0.0.0"), port);
                 listener.Start();
                 Console.WriteLine("Ожидание подключений...");
 
